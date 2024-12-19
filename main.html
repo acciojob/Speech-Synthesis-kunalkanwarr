@@ -6,37 +6,81 @@
   <link href='https://fonts.googleapis.com/css?family=Pacifico' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body><h1>Text to Speech Application</h1>
 
-    <div class="voiceinator">
+    <!-- Input field for text -->
+    <textarea id="text-to-speak" rows="10" cols="50" placeholder="Enter text here..."></textarea><br>
 
-      <h1>The Voiceinator 5000</h1>
+    <!-- Dropdown to select voice -->
+    <label for="voices">Select Voice:</label>
+    <select id="voices"></select><br><br>
 
-      <select name="voice" id="voices">
-        <option value="">Select A Voice</option>
-      </select>
+    <!-- Controls for rate and pitch -->
+    <label for="rate">Rate: </label>
+    <input type="range" id="rate" min="0.1" max="2" step="0.1" value="1"><br><br>
 
-      <label for="rate">Rate:</label>
-      <input name="rate" type="range" min="0" max="3" value="1" step="0.1">
+    <label for="pitch">Pitch: </label>
+    <input type="range" id="pitch" min="0" max="2" step="0.1" value="1"><br><br>
 
-      <label for="pitch">Pitch:</label>
+    <!-- Buttons for start and stop -->
+    <button id="start-btn">Start</button>
+    <button id="stop-btn">Stop</button>
 
-      <input name="pitch" type="range" min="0" max="2" step="0.1">
-      <textarea name="text">Hello! I love JavaScript 👍</textarea>
-      <button id="stop">Stop!</button>
-      <button id="speak">Speak</button>
+    <script>
+        // Get references to DOM elements
+        const textToSpeak = document.getElementById('text-to-speak');
+        const voicesDropdown = document.getElementById('voices');
+        const rateControl = document.getElementById('rate');
+        const pitchControl = document.getElementById('pitch');
+        const startButton = document.getElementById('start-btn');
+        const stopButton = document.getElementById('stop-btn');
+        
+        let synth = window.speechSynthesis;
+        let currentUtterance = null;
 
-    </div>
+        // Function to load available voices into the dropdown
+        function loadVoices() {
+            const voices = synth.getVoices();
+            voicesDropdown.innerHTML = ''; // Clear previous voices
+            voices.forEach((voice) => {
+                let option = document.createElement('option');
+                option.textContent = voice.name;
+                option.value = voice.name;
+                voicesDropdown.appendChild(option);
+            });
+        }
 
-<script>
-  const msg = new SpeechSynthesisUtterance();
-  let voices = [];
-  const voicesDropdown = document.querySelector('[name="voice"]');
-  const options = document.querySelectorAll('[type="range"], [name="text"]');
-  const speakButton = document.querySelector('#speak');
-  const stopButton = document.querySelector('#stop');
+        // Load voices when the page is loaded or when voices are available
+        loadVoices();
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = loadVoices;
+        }
 
-  //Your code goes here
+        // Function to start speaking
+        function startSpeaking() {
+            if (textToSpeak.value.trim() !== '') {
+                currentUtterance = new SpeechSynthesisUtterance(textToSpeak.value);
+                currentUtterance.voice = voicesDropdown.value ? synth.getVoices().find(voice => voice.name === voicesDropdown.value) : synth.getVoices()[0];
+                currentUtterance.rate = rateControl.value;
+                currentUtterance.pitch = pitchControl.value;
+
+                // Start speaking the text
+                synth.speak(currentUtterance);
+            }
+        }
+
+        // Function to stop speaking
+        function stopSpeaking() {
+            if (currentUtterance) {
+                synth.cancel(); // Stop speaking
+            }
+        }
+
+        // Event listener for Start button
+        startButton.addEventListener('click', startSpeaking);
+
+        // Event listener for Stop button
+        stopButton.addEventListener('click', stopSpeaking);
 </script>
 
 </body>
